@@ -1,6 +1,14 @@
-const { customAlphabet } = require('nanoid');
+const { randomUUID } = require('crypto');
 
-const generateRoomCode = customAlphabet('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', 6);
+const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+function generateRoomCode() {
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += ALPHABET[Math.floor(Math.random() * ALPHABET.length)];
+  }
+  return code;
+}
+const generateId = (prefix) => `${prefix}-${randomUUID()}`;
 
 const MOODS = ['Joy', 'Anger', 'Sadness', 'Fear', 'Disgust'];
 const SWING_EFFECTS = ['Steal', 'Swap', 'Block'];
@@ -10,13 +18,13 @@ function createDeck() {
   // 40 mood cards (8 of each mood)
   for (const mood of MOODS) {
     for (let i = 0; i < 8; i++) {
-      deck.push({ id: `m-${mood}-${i}-${Math.random().toString(36).slice(2, 8)}`, type: 'mood', mood });
+      deck.push({ id: generateId(`m-${mood}`), type: 'mood', mood });
     }
   }
   // 20 swing cards: simple distribution
-  for (let i = 0; i < 7; i++) deck.push({ id: `s-steal-${i}-${Math.random().toString(36).slice(2, 8)}`, type: 'swing', effect: 'Steal' });
-  for (let i = 0; i < 7; i++) deck.push({ id: `s-swap-${i}-${Math.random().toString(36).slice(2, 8)}`, type: 'swing', effect: 'Swap' });
-  for (let i = 0; i < 6; i++) deck.push({ id: `s-block-${i}-${Math.random().toString(36).slice(2, 8)}`, type: 'swing', effect: 'Block' });
+  for (let i = 0; i < 7; i++) deck.push({ id: generateId('s-steal'), type: 'swing', effect: 'Steal' });
+  for (let i = 0; i < 7; i++) deck.push({ id: generateId('s-swap'), type: 'swing', effect: 'Swap' });
+  for (let i = 0; i < 6; i++) deck.push({ id: generateId('s-block'), type: 'swing', effect: 'Block' });
   return shuffle(deck);
 }
 
@@ -58,8 +66,10 @@ class GameManager {
   }
 
   joinRoom(roomCode, playerName, socketId) {
+    roomCode = this._normalizeRoomCode(roomCode);
     const room = this._getRoomOrThrow(roomCode);
     if (room.started) throw new Error('Game already started');
+    if (room.players.size >= 6) throw new Error('Room full');
     const player = this._createPlayer(playerName, socketId);
     room.players.set(player.id, player);
     room.turnOrder.push(player.id);
@@ -68,6 +78,7 @@ class GameManager {
   }
 
   reconnect(roomCode, playerId, newSocketId) {
+    roomCode = this._normalizeRoomCode(roomCode);
     const room = this._getRoomOrThrow(roomCode);
     const player = room.players.get(playerId);
     if (!player) throw new Error('Unknown player');
@@ -276,14 +287,25 @@ class GameManager {
 
   // Helpers
   _createPlayer(name, socketId) {
-    const id = `p_${Math.random().toString(36).slice(2, 10)}`;
-    return { id, name: name || 'Player', socketId, hand: [], collection: new Set(), shield: false };
+    const id = `p_${randomUUID()}`;
+    const safeName = this._sanitizeName(name);
+    return { id, name: safeName, socketId, hand: [], collection: new Set(), shield: false };
   }
 
   _getRoomOrThrow(roomCode) {
     const room = this.rooms.get(roomCode);
     if (!room) throw new Error('Room not found');
     return room;
+  }
+
+  _sanitizeName(name) {
+    const n = (typeof name === 'string' ? name : 'Player').trim();
+    if (!n) return 'Player';
+    return n.slice(0, 16);
+  }
+
+  _normalizeRoomCode(code) {
+    return (code || '').toString().toUpperCase();
   }
 
   _isReady(room, playerId) {

@@ -1,5 +1,5 @@
 import { qs, showScreen, setInviteBar, renderLobby, renderBoard, renderHand, showPopup } from './ui.js';
-import { sounds, tryPlay } from './cards.js';
+import { sounds, tryPlay, setMuted, getMuted } from './cards.js';
 
 const socket = io();
 
@@ -31,6 +31,10 @@ qs('#btnStart').addEventListener('click', onStartGame);
 qs('#btnDraw').addEventListener('click', onDraw);
 qs('#btnEndTurn').addEventListener('click', onEndTurn);
 qs('#copyInvite').addEventListener('click', copyInvite);
+const btnSound = qs('#toggleSound');
+const btnTheme = qs('#toggleTheme');
+if (btnSound) btnSound.addEventListener('click', toggleSound);
+if (btnTheme) btnTheme.addEventListener('click', toggleTheme);
 
 // Socket events
 socket.on('gameState', (state) => {
@@ -43,6 +47,7 @@ socket.on('yourState', (state) => {
   updateUI();
 });
 
+initPrefs();
 initFromUrl();
 
 async function onCreateGame() {
@@ -123,6 +128,7 @@ function updateUI() {
       if (winner) {
         showPopup(`<h2>🎉 ${winner.name} FLIPPED OUT!</h2>`);
         tryPlay(sounds.win);
+        launchConfetti();
       }
     }
   }
@@ -198,4 +204,84 @@ function initFromUrl() {
       }
     });
   }
+}
+
+function initPrefs() {
+  // Sound state
+  const muted = getMuted();
+  setMuted(muted);
+  const btnSound = qs('#toggleSound');
+  if (btnSound) btnSound.classList.toggle('active', !muted);
+
+  // Theme state
+  const theme = (localStorage.getItem('flipout-theme') || 'dark');
+  applyTheme(theme);
+}
+
+function toggleSound() {
+  const nextMuted = !getMuted();
+  setMuted(nextMuted);
+  const btnSound = qs('#toggleSound');
+  if (btnSound) btnSound.classList.toggle('active', !nextMuted);
+}
+
+function toggleTheme() {
+  const current = document.documentElement.dataset.theme || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+}
+
+function applyTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  try { localStorage.setItem('flipout-theme', theme); } catch (_) {}
+  // Optional: slightly adjust CSS variables for light
+  if (theme === 'light') {
+    document.documentElement.style.setProperty('--bg', '#f6f7fb');
+    document.documentElement.style.setProperty('--bg-elev', '#ffffff');
+    document.documentElement.style.setProperty('--text', '#1a194a');
+    document.documentElement.style.setProperty('--muted', '#6b6f9c');
+    document.documentElement.style.setProperty('--card', '#ffffff');
+    document.documentElement.style.setProperty('--border', '#e4e7ff');
+  } else {
+    document.documentElement.style.removeProperty('--bg');
+    document.documentElement.style.removeProperty('--bg-elev');
+    document.documentElement.style.removeProperty('--text');
+    document.documentElement.style.removeProperty('--muted');
+    document.documentElement.style.removeProperty('--card');
+    document.documentElement.style.removeProperty('--border');
+  }
+}
+
+function launchConfetti() {
+  const container = document.createElement('div');
+  container.style.position = 'fixed';
+  container.style.inset = '0';
+  container.style.pointerEvents = 'none';
+  container.style.overflow = 'hidden';
+  document.body.appendChild(container);
+
+  const colors = ['#7c5cff', '#ff6ec7', '#55efc4', '#ffd166', '#6cedff'];
+  const count = 120;
+  for (let i = 0; i < count; i++) {
+    const p = document.createElement('div');
+    p.style.position = 'absolute';
+    p.style.width = '8px';
+    p.style.height = '12px';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.top = '-20px';
+    p.style.opacity = '0.9';
+    p.style.transform = `rotate(${Math.random() * 360}deg)`;
+    p.style.borderRadius = '2px';
+    container.appendChild(p);
+
+    const duration = 2000 + Math.random() * 2000;
+    const x = (Math.random() * 2 - 1) * 100;
+    p.animate([
+      { transform: `translate(0, 0) rotate(0deg)` },
+      { transform: `translate(${x}px, ${window.innerHeight + 80}px) rotate(720deg)` }
+    ], { duration, easing: 'cubic-bezier(.29,.59,.19,1.01)', fill: 'forwards' });
+  }
+
+  setTimeout(() => container.remove(), 4500);
 }
