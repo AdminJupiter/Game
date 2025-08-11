@@ -7,9 +7,15 @@ function attachSocketServer(httpServer) {
   });
 
   io.on('connection', (socket) => {
+    // Helpers
+    const getString = (v, fallback = '') => (typeof v === 'string' ? v : fallback);
+    const codeFrom = (v) => getString(v).toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    const idFrom = (v) => getString(v).slice(0, 64);
+
     // Create a new game room
-    socket.on('createGame', ({ playerName }, ack) => {
+    socket.on('createGame', (payload, ack) => {
       try {
+        const playerName = getString(payload && payload.playerName, 'Player');
         const { roomCode, player } = gameManager.createRoom(playerName, socket.id);
         socket.join(roomCode);
         safeAck(ack, { ok: true, roomCode, playerId: player.id });
@@ -20,8 +26,10 @@ function attachSocketServer(httpServer) {
     });
 
     // Join existing room
-    socket.on('joinGame', ({ roomCode, playerName }, ack) => {
+    socket.on('joinGame', (payload, ack) => {
       try {
+        const roomCode = codeFrom(payload && payload.roomCode);
+        const playerName = getString(payload && payload.playerName, 'Player');
         const { player } = gameManager.joinRoom(roomCode, playerName, socket.id);
         socket.join(roomCode);
         safeAck(ack, { ok: true, roomCode, playerId: player.id });
@@ -32,8 +40,10 @@ function attachSocketServer(httpServer) {
     });
 
     // Reconnect by playerId
-    socket.on('reconnectPlayer', ({ roomCode, playerId }, ack) => {
+    socket.on('reconnectPlayer', (payload, ack) => {
       try {
+        const roomCode = codeFrom(payload && payload.roomCode);
+        const playerId = idFrom(payload && payload.playerId);
         gameManager.reconnect(roomCode, playerId, socket.id);
         socket.join(roomCode);
         safeAck(ack, { ok: true });
@@ -44,8 +54,10 @@ function attachSocketServer(httpServer) {
       }
     });
 
-    socket.on('toggleReady', ({ roomCode, playerId }, ack) => {
+    socket.on('toggleReady', (payload, ack) => {
       try {
+        const roomCode = codeFrom(payload && payload.roomCode);
+        const playerId = idFrom(payload && payload.playerId);
         gameManager.toggleReady(roomCode, playerId);
         safeAck(ack, { ok: true });
         emitRoomState(io, roomCode);
@@ -54,8 +66,10 @@ function attachSocketServer(httpServer) {
       }
     });
 
-    socket.on('startGame', ({ roomCode, playerId }, ack) => {
+    socket.on('startGame', (payload, ack) => {
       try {
+        const roomCode = codeFrom(payload && payload.roomCode);
+        const playerId = idFrom(payload && payload.playerId);
         gameManager.startGame(roomCode, playerId);
         safeAck(ack, { ok: true });
         emitRoomState(io, roomCode);
@@ -66,8 +80,10 @@ function attachSocketServer(httpServer) {
       }
     });
 
-    socket.on('drawCard', ({ roomCode, playerId }, ack) => {
+    socket.on('drawCard', (payload, ack) => {
       try {
+        const roomCode = codeFrom(payload && payload.roomCode);
+        const playerId = idFrom(payload && payload.playerId);
         gameManager.drawCard(roomCode, playerId);
         safeAck(ack, { ok: true });
         emitRoomState(io, roomCode);
@@ -77,8 +93,12 @@ function attachSocketServer(httpServer) {
       }
     });
 
-    socket.on('playCard', ({ roomCode, playerId, cardId, targetPlayerId }, ack) => {
+    socket.on('playCard', (payload, ack) => {
       try {
+        const roomCode = codeFrom(payload && payload.roomCode);
+        const playerId = idFrom(payload && payload.playerId);
+        const cardId = idFrom(payload && payload.cardId);
+        const targetPlayerId = payload && payload.targetPlayerId ? idFrom(payload.targetPlayerId) : undefined;
         const result = gameManager.playCard(roomCode, playerId, cardId, targetPlayerId);
         safeAck(ack, { ok: true, result });
         emitRoomState(io, roomCode);
@@ -88,8 +108,11 @@ function attachSocketServer(httpServer) {
       }
     });
 
-    socket.on('discardCard', ({ roomCode, playerId, cardId }, ack) => {
+    socket.on('discardCard', (payload, ack) => {
       try {
+        const roomCode = codeFrom(payload && payload.roomCode);
+        const playerId = idFrom(payload && payload.playerId);
+        const cardId = idFrom(payload && payload.cardId);
         gameManager.discardCard(roomCode, playerId, cardId);
         safeAck(ack, { ok: true });
         emitRoomState(io, roomCode);
@@ -99,8 +122,10 @@ function attachSocketServer(httpServer) {
       }
     });
 
-    socket.on('endTurn', ({ roomCode, playerId }, ack) => {
+    socket.on('endTurn', (payload, ack) => {
       try {
+        const roomCode = codeFrom(payload && payload.roomCode);
+        const playerId = idFrom(payload && payload.playerId);
         gameManager.endTurn(roomCode, playerId);
         safeAck(ack, { ok: true });
         emitRoomState(io, roomCode);

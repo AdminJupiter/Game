@@ -6,17 +6,37 @@
   "main": "src/server/index.js",
   "scripts": {
     "start": "node src/server/index.js",
-    "dev": "nodemon --watch src --ext js --exec node src/server/index.js"
+    "start:prod": "NODE_ENV=production node src/server/index.js",
+    "dev": "nodemon --watch src --ext js --exec node src/server/index.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "jest --runInBand"
   },
   "dependencies": {
+    "compression": "^1.7.4",
     "express": "^4.19.2",
-    "socket.io": "^4.7.5",
-    "nanoid": "^5.0.7"
+    "helmet": "^7.1.0",
+    "socket.io": "^4.7.5"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "@eslint/js": "^9.12.0",
+    "eslint": "^9.7.0",
+    "globals": "^15.9.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.0",
+    "prettier": "^3.3.3"
   },
   "engines": {
     "node": ">=18"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "src/server/**/*.js",
+      "!src/server/index.js",
+      "!src/server/sockets.js"
+    ]
   }
 }

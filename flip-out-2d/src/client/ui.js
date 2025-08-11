@@ -38,9 +38,10 @@ export function renderLobby(state) {
 
 export function renderBoard(state) {
   // HUD
-  qs('#turnIndicator').textContent = state.currentTurnPlayerId
-    ? `Turn: ${state.players.find((p) => p.id === state.currentTurnPlayerId)?.name || ''}`
-    : '';
+  const current = state.currentTurnPlayerId
+    ? state.players.find((p) => p.id === state.currentTurnPlayerId)
+    : null;
+  qs('#turnIndicator').textContent = current ? `🎮 Turn: ${current.name}` : '';
   qs('#deckInfo').textContent = `Deck: ${state.deckCount}`;
   // Discard visual
   const discard = qs('#discardPile');
@@ -51,10 +52,20 @@ export function renderBoard(state) {
   area.innerHTML = '';
   state.players.forEach((p) => {
     const panel = document.createElement('div');
-    panel.className = 'playerPanel';
+    panel.className = 'playerPanel' + (state.currentTurnPlayerId === p.id ? ' active' : '');
+
+    const header = document.createElement('div');
+    header.className = 'playerHeader';
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar';
+    avatar.style.background = colorForName(p.name);
+    avatar.textContent = initials(p.name);
     const name = document.createElement('div');
     name.className = 'name';
     name.textContent = `${p.name} ${p.shield ? '🛡️' : ''}`;
+    header.appendChild(avatar);
+    header.appendChild(name);
+
     const coll = document.createElement('div');
     coll.className = 'collection';
     p.collection.forEach((m) => {
@@ -66,13 +77,27 @@ export function renderBoard(state) {
     const handCount = document.createElement('div');
     handCount.className = 'muted';
     handCount.textContent = `Hand: ${p.handCount}`;
-    panel.appendChild(name);
+
+    panel.appendChild(header);
     panel.appendChild(coll);
     panel.appendChild(handCount);
     area.appendChild(panel);
   });
 }
 
+function hashCode(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (h << 5) - h + str.charCodeAt(i) | 0;
+  return h >>> 0;
+}
+function colorForName(name) {
+  const h = hashCode(name || 'Player') % 360;
+  return `hsl(${h} 45% 40%)`;
+}
+function initials(name) {
+  const parts = (name || 'P').split(/\s+/).filter(Boolean);
+  return (parts[0]?.[0] || 'P').toUpperCase() + (parts[1]?.[0] || '').toUpperCase();
+}
 export function renderHand(privateState, { onPlay, onDiscard, onTargetSelect, canAct }) {
   const hand = qs('#handArea');
   hand.innerHTML = '';
