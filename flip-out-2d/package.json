@@ -1,0 +1,22 @@
+{
+  "name": "flip-out-2d",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Flip Out! - 2D Multiplayer Mood Swing Card Game",
+  "main": "src/server/index.js",
+  "scripts": {
+    "start": "node src/server/index.js",
+    "dev": "nodemon --watch src --ext js --exec node src/server/index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5",
+    "nanoid": "^5.0.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
