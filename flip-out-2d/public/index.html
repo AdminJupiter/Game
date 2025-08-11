@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Flip Out! - 2D Multiplayer Mood Swing Card Game</title>
+    <link rel="stylesheet" href="/styles/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1>Flip Out!</h1>
+        <div id="inviteBar" class="hidden">
+          <span>Invite code:</span>
+          <code id="inviteCode"></code>
+          <button id="copyInvite">Copy Link</button>
+        </div>
+      </header>
+
+      <main>
+        <section id="screen-home" class="screen">
+          <div class="panel">
+            <input id="playerName" placeholder="Your name" maxlength="16" />
+            <div class="row">
+              <button id="btnCreate">Create Game</button>
+            </div>
+            <div class="row">
+              <input id="joinCode" placeholder="Enter code" maxlength="6" />
+              <button id="btnJoin">Join Game</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="screen-lobby" class="screen hidden">
+          <h2>Lobby</h2>
+          <ul id="players"></ul>
+          <div class="row">
+            <button id="btnReady">Ready</button>
+            <button id="btnStart" disabled>Start Game</button>
+          </div>
+        </section>
+
+        <section id="screen-game" class="screen hidden">
+          <div id="hud">
+            <div id="turnIndicator"></div>
+            <div id="deckInfo"></div>
+            <div id="timer"></div>
+          </div>
+          <div id="board">
+            <div id="playersArea"></div>
+            <div id="centerArea">
+              <div id="discardPile"></div>
+              <div class="row">
+                <button id="btnDraw">Draw</button>
+                <button id="btnEndTurn">End Turn</button>
+              </div>
+            </div>
+            <div id="handArea"></div>
+          </div>
+          <div id="popup" class="hidden"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js" integrity="sha512-aZ9q0lqJ2PPI+qfGm9B3OzPq3EsqgVaSiTt0b1ZVaGuKX2i0Qj5W5lN7FzSgQ4b3N/fQJ4O/7zQ4xwM0zLkK8g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="module" src="/src/client/game.js"></script>
+  </body>
+</html>

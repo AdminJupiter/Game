@@ -1,0 +1,55 @@
+* { box-sizing: border-box; }
+:root {
+  --bg: #0f1220;
+  --panel: #1b1f36;
+  --accent: #ffcc00;
+  --text: #e8e8f0;
+  --muted: #9aa0b4;
+  --good: #34d399;
+  --bad: #f87171;
+}
+html, body { height: 100%; }
+body {
+  margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica Neue, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background: radial-gradient(1200px 800px at 50% -10%, #1a1f3b, var(--bg));
+  color: var(--text);
+}
+#app { max-width: 1100px; margin: 0 auto; padding: 16px; }
+header { display: flex; align-items: center; justify-content: space-between; }
+h1 { margin: 8px 0 16px; letter-spacing: 1px; }
+.panel { background: var(--panel); padding: 16px; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+.row { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+input { padding: 10px 12px; border-radius: 10px; border: 1px solid #303656; background: #121630; color: var(--text); }
+button { padding: 10px 14px; border-radius: 10px; border: 2px solid #2c3154; background: #24294b; color: var(--text); cursor: pointer; font-weight: 700; }
+button:hover { transform: translateY(-1px); box-shadow: 0 6px 14px rgba(0,0,0,0.25); }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+code { background: #121630; padding: 3px 6px; border-radius: 6px; }
+.hidden { display: none !important; }
+.screen { margin-top: 12px; }
+#players li { padding: 6px 8px; border-bottom: 1px dashed #2e3358; display: flex; justify-content: space-between; }
+#players .ready { color: var(--good); }
+#board { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }
+#playersArea { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.playerPanel { background: #161a36; padding: 12px; border-radius: 10px; }
+.playerPanel .name { font-weight: 800; }
+.playerPanel .collection { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.mood { padding: 4px 8px; border-radius: 999px; border: 1px solid #3a3f6a; font-size: 12px; }
+.mood.Joy { background: #1d3e27; border-color: #2f6f47; }
+.mood.Anger { background: #45212b; border-color: #7a2e3f; }
+.mood.Sadness { background: #1c2e47; border-color: #2c4a77; }
+.mood.Fear { background: #2b2a2a; border-color: #4a4949; }
+.mood.Disgust { background: #203b2c; border-color: #39654e; }
+#centerArea { background: #161a36; padding: 12px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+#discardPile { height: 120px; width: 80%; border: 2px dashed #333a6a; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--muted); }
+#handArea { background: #161a36; padding: 10px; border-radius: 10px; min-height: 160px; display: flex; flex-wrap: wrap; gap: 10px; }
+.card { width: 100px; height: 140px; background: #0e1230; border: 2px solid #2c3154; border-radius: 12px; display: flex; align-items: center; justify-content: center; position: relative; }
+.card .label { font-weight: 800; text-align: center; }
+.card.mood { border-color: #3a6ea1; }
+.card.swing { border-color: #a15e3a; }
+.card .play { position: absolute; bottom: 6px; left: 6px; right: 6px; }
+#popup { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,0.6); }
+#popup .modal { background: #11152e; padding: 20px; border-radius: 12px; text-align: center; }
+@media (max-width: 800px) {
+  #board { grid-template-columns: 1fr; }
+  .card { width: 86px; height: 120px; }
+}
